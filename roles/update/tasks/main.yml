@@ -1,0 +1,12 @@
+---
+- include_tasks: lighthouse.yml
+  tags:
+    - update.lighthouse
+
+- include_tasks: geth.yml
+  tags:
+    - update.geth
+
+- include_tasks: mev.yml
+  tags:
+    - update.mev

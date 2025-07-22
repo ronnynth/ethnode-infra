@@ -1,0 +1,67 @@
+---
+- name: Ensure base_dir exists
+  ansible.builtin.file:
+      state: directory
+      path: "{{ geth_base_dir }}/geth"
+      mode: "0755"
+  tags:
+      - update.geth
+
+- name: Ensure tmp_dir exists
+  ansible.builtin.file:
+      state: directory
+      path: "{{ geth_base_dir }}/geth/tmp"
+      mode: "0755"
+  tags:
+      - update.geth
+
+- name: Extract version number without 'v'
+  ansible.builtin.set_fact:
+    geth_number_version: "{{ geth_version | regex_replace('^v', '') }}"
+  tags:
+      - update.geth
+
+- name: Show current version
+  debug:
+    msg: "Current geth client version is: {{ geth_number_version }}"
+  tags:
+      - update.geth
+      
+- name: Download go-ethereum tools pkg
+  ansible.builtin.get_url:
+      url: "https://gethstore.blob.core.windows.net/builds/geth-alltools-linux-amd64-{{ geth_number_version }}-a9523b64.tar.gz"
+      dest: /tmp/geth.tgz
+      checksum: "{{ geth_check_sum }}"
+  tags:
+      - update.geth
+
+- name: Unarchive geth file
+  ansible.builtin.unarchive:
+      src: /tmp/geth.tgz
+      dest: "{{ geth_base_dir }}/geth/tmp"
+      remote_src: yes
+      extra_opts: [ --strip-components=1 ]
+  tags:
+      - update.geth
+
+- name: Rename the extracted directory
+  ansible.builtin.shell: mv "{{ geth_base_dir }}/geth/tmp" "{{ geth_base_dir }}/geth/geth-{{ geth_version }}"
+  tags:
+      - update.geth
+
+- name: Replace geth version in start_node.sh
+  ansible.builtin.replace:
+    path: "{{ geth_base_dir }}/geth/start_node.sh"
+    regexp: 'geth-tools-v[0-9]+\.[0-9]+\.[0-9]+'
+    replace: 'geth-tools-{{ geth_version }}'
+  tags:
+      - update.geth
+
+- name: Restarted geth
+  ansible.builtin.systemd:
+    name: geth.service
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+  tags:
+      - update.geth

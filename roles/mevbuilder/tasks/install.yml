@@ -1,0 +1,65 @@
+---
+- name: Ensure base_dir exists
+  ansible.builtin.file:
+      state: directory
+      path: "{{ base_dir }}/mev"
+      mode: "0755"
+  tags:
+      - mev.install
+
+- name: Ensure tmp_dir exists
+  ansible.builtin.file:
+      state: directory
+      path: "{{ base_dir }}/mev/tmp"
+      mode: "0755"
+  tags:
+      - mev.install
+
+- name: Download builder pkg
+  ansible.builtin.get_url:
+      url: "{{ builder }}"
+      dest: /tmp/builder.tgz  
+  tags:
+      - mev.install
+
+- name: Unarchive
+  ansible.builtin.unarchive:
+      src: /tmp/builder.tgz
+      dest: "{{ base_dir }}/mev/tmp"
+      remote_src: yes
+  tags:
+      - mev.install
+
+- name: Rename the extracted directory
+  ansible.builtin.shell: mv "{{ base_dir }}/mev/tmp/mev-boost" "{{ base_dir }}/mev/mev-{{ version }}" && rm -rf "{{ base_dir }}/mev/tmp"
+  tags:
+      - mev.install
+
+- name: Render start_node.sh file
+  ansible.builtin.template:
+    src: start_node.sh.j2
+    dest: "{{ base_dir }}/mev/start_node.sh"
+    owner: root
+    group: root
+    mode: 0755
+  tags:
+      - mev.install
+
+- name: Render mev-boost.service file
+  ansible.builtin.template:
+    src: mev-boost.service.j2
+    dest: /etc/systemd/system/mev-boost.service
+    mode: 0644
+    owner: root
+    group: root
+  tags:
+      - mev.install
+
+- name: Restart mev-boost
+  ansible.builtin.systemd:
+    name: mev-boost.service
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+  tags:
+      - mev.install

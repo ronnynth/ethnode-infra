@@ -1,0 +1,19 @@
+#!/bin/bash
+
+{{ base_dir }}/geth/geth-{{ version }}/geth --datadir={{ base_dir }}/geth/data \
+     --{{ network }} \
+     --http \
+     --http.addr=0.0.0.0 \
+     --ws \
+     --ws.addr=0.0.0.0 \
+{% if extip is defined and extip | default('') == '' %}
+     --nat="extip:{{ extip }}" \
+{% endif %}
+     --http.api="eth,net,web3" \
+     --authrpc.jwtsecret="{{ base_dir }}/geth/.jwt.hex" \
+     --authrpc.addr=0.0.0.0 \
+     --authrpc.port=8555 \
+     --authrpc.vhosts="*" \
+     --metrics \
+     --metrics.addr=0.0.0.0 \
+     --metrics.port=6004

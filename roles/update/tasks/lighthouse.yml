@@ -1,0 +1,53 @@
+---
+- name: Ensure base_dir exists
+  ansible.builtin.file:
+      state: directory
+      path: "{{ lighthouse_base_dir }}/lighthouse"
+      mode: "0755"
+  tags:
+      - update.lighthouse
+
+- name: Ensure tmp_dir exists
+  ansible.builtin.file:
+      state: directory
+      path: "{{ lighthouse_base_dir }}/lighthouse/tmp"
+      mode: "0755"
+  tags:
+      - update.lighthouse
+
+- name: Download lighthouse pkg
+  ansible.builtin.get_url:
+      url: "https://github.com/sigp/lighthouse/releases/download/{{ lighthouse_version }}/lighthouse-{{ lighthouse_version }}-x86_64-unknown-linux-gnu.tar.gz"
+      dest: /tmp/lighthouse.tgz
+  tags:
+      - update.lighthouse
+
+- name: Unarchive
+  ansible.builtin.unarchive:
+      src: /tmp/lighthouse.tgz
+      dest: "{{ lighthouse_base_dir }}/lighthouse/tmp"
+      remote_src: yes
+  tags:
+      - update.lighthouse
+
+- name: Rename the extracted directory
+  ansible.builtin.shell: mv "{{ lighthouse_base_dir }}/lighthouse/tmp/lighthouse" "{{ lighthouse_base_dir }}/lighthouse/lighthouse-{{ lighthouse_version }}" && rm -rf "{{ lighthouse_base_dir }}/lighthouse/tmp"
+  tags:
+      - update.lighthouse
+
+- name: Replace lighthouse version in start_node.sh
+  ansible.builtin.replace:
+    path: "{{ lighthouse_base_dir }}/lighthouse/start_node.sh"
+    regexp: 'lighthouse-v[0-9]+\.[0-9]+\.[0-9]+'
+    replace: 'lighthouse-{{ lighthouse_version }}'
+  tags:
+      - update.lighthouse
+
+- name: Restart lighthouse
+  ansible.builtin.systemd:
+    name: lighthouse.service
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+  tags:
+      - update.lighthouse

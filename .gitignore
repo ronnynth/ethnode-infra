@@ -1,0 +1,43 @@
+# Ansible temporary files
+*.retry
+.ansible_cache/
+.vault_pass
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Sensitive files (should be managed securely)
+group_vars/all/vault.yml
+host_vars/*/vault.yml
+
+# Backup files
+*.bak
+*.backup
+
+# Local development files
+vagrant/
+.vagrant/
+local_settings.yml
+
+# Downloaded packages
+*.tgz
+*.tar.gz
+*.zip
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo 

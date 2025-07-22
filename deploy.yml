@@ -1,0 +1,103 @@
+---
+# Ethereum Infrastructure Deployment Playbook
+# This playbook deploys a complete Ethereum setup including:
+# - Geth (Execution client)
+# - Lighthouse (Consensus client) 
+# - MEV-Boost (MEV relay)
+# - Basic system configuration and disk setup
+
+- name: Deploy Ethereum Infrastructure
+  hosts: ethereum_nodes  # Change this to your target host group
+  gather_facts: false
+  become: yes
+  become_user: root
+
+  vars:
+    # Global configuration variables
+    # These can be overridden in group_vars/ or host_vars/
+    execution_data_dir: /data
+    consensus_data_dir: /store
+    
+    # Disk configuration - IMPORTANT: Update these values for your environment
+    # Primary disk for execution client data
+    execution_disk: /dev/vdb  # Change to your actual disk device
+    
+    # Secondary disk for consensus client data  
+    consensus_disk: /dev/vdc  # Change to your actual disk device or use same as execution_disk
+
+  roles:
+    # Base system setup and dependencies
+    - role: base
+      vars:
+        dev: "{{ execution_disk }}"
+      tags: ['base']
+
+    - name: Check if execution_disk exists
+      ansible.builtin.stat:
+        path: "{{ execution_disk }}"
+      register: execution_disk_stat  
+
+    - name: Check if consensus_disk exists
+      ansible.builtin.stat:
+        path: "{{ consensus_disk }}"
+      register: consensus_disk_stat
+
+    # Setup primary disk for execution client
+    - role: disk
+      vars:
+        dev: "{{ execution_disk }}"
+        dir: "{{ execution_data_dir }}"
+      tags: ['disk', 'execution-disk']
+      when: 
+        - execution_disk != consensus_disk
+        - execution_disk_stat.stat.exists
+        
+    # Setup secondary disk for consensus client (if different from execution)
+    - role: disk
+      vars:
+        dev: "{{ consensus_disk }}"
+        dir: "{{ consensus_data_dir }}"
+      tags: ['disk', 'consensus-disk']
+      when: 
+        - execution_disk != consensus_disk
+        - consensus_disk_stat.stat.exists
+
+    # MEV-Boost relay setup
+    - role: mevbuilder
+      vars:
+        base_dir: "{{ consensus_data_dir }}"
+      tags: ['mev']
+
+    # Geth execution client
+    - role: geth
+      vars:
+        base_dir: "{{ execution_data_dir }}"
+      tags: ['geth', 'execution']
+
+    # Lighthouse consensus client
+    - role: lighthouse
+      vars:
+        base_dir: "{{ consensus_data_dir }}"
+      tags: ['lighthouse', 'consensus']
+
+  post_tasks:
+    - name: Display deployment summary
+      debug:
+        msg: |
+          Ethereum infrastructure deployment completed successfully!
+          
+          Services deployed:
+          - Geth (Execution): {{ execution_data_dir }}/geth
+          - Lighthouse (Consensus): {{ consensus_data_dir }}/lighthouse  
+          - MEV-Boost: {{ consensus_data_dir }}/mev
+          
+          Service status commands:
+          - systemctl status geth
+          - systemctl status lighthouse
+          - systemctl status mev-boost
+          
+          Log locations:
+          - journalctl -u geth -f
+          - journalctl -u lighthouse -f
+          - journalctl -u mev-boost -f
+      tags: ['summary']

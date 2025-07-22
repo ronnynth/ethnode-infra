@@ -1,0 +1,42 @@
+---
+- name: Check device status
+  ansible.builtin.stat:
+    path: "{{ dev }}"
+  register: devdir
+  tags:
+    - base.disk
+
+- name: Check data directory status
+  ansible.builtin.stat:
+    path: "/data"
+  register: datadir
+  tags:
+    - base.disk
+
+- name: Initialize filesystem
+  community.general.filesystem:
+    fstype: ext4
+    dev: "{{ dev }}"
+  when: devdir.stat.exists and not datadir.stat.exists
+  tags:
+    - base.disk
+
+- name: Create data directory
+  ansible.builtin.file:
+    state: directory
+    path: /data
+    mode: "0755"
+  when: devdir.stat.exists and not datadir.stat.exists
+  tags:
+    - base.disk
+
+- name: Mount data directory to new disk
+  ansible.posix.mount:
+    path: /data
+    src: "{{ dev }}"
+    fstype: ext4
+    opts: defaults,noatime
+    state: mounted
+  when: devdir.stat.exists and not datadir.stat.exists
+  tags:
+    - base.disk

@@ -1,0 +1,25 @@
+# Prysm consensus client configuration  
+version: v6.0.3
+base_dir: /store
+
+# Network configuration - supported networks: mainnet, prater, goerli, gnosis, chiado, sepolia, holesky
+network: mainnet
+checkpoint: https://mainnet.checkpoint.sigp.io
+
+# Execution client connection options:
+# Option 1: HTTP endpoint (recommended for remote geth)
+# execution: http://127.0.0.1:8555
+# Option 2: IPC socket (for local geth, better performance)
+execution: /data/geth/data/geth.ipc
+
+# MEV-Boost connection
+builder: http://127.0.0.1:18550
+
+# CRITICAL: Update this with your actual Ethereum address for fee rewards
+# This is a placeholder address - NEVER use this in production!
+recipient: "0x63da182b915e5989852d69d5cb2c52ecaa52ae8f"  # WARNING: Replace with your address
+
+# External IP for P2P networking (optional)
+# Set this if your node is behind NAT and you want to advertise a specific external IP
+# Leave empty to auto-detect
+extip: 

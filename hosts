@@ -1,0 +1,36 @@
+# Ethereum Infrastructure Inventory
+# This file defines the target hosts for deploying Ethereum clients
+
+# Production Ethereum nodes
+[ethereum_nodes]
+# Example: Mainnet nodes
+# eth-node-01 ansible_host=192.168.1.10 ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/eth_key
+# eth-node-02 ansible_host=192.168.1.11 ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/eth_key
+
+# Example: Cloud instances (Google Cloud, AWS, etc.)
+# cloud-node-01 ansible_host=123.456.789.10 ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/cloud_key
+# cloud-node-02 ansible_host=123.456.789.11 ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/cloud_key
+
+[newhosts]
+# Add your new hosts here
+# Replace with actual IP addresses and connection details
+# host-name ansible_host=IP_ADDRESS ansible_user=USERNAME ansible_ssh_private_key_file=PATH_TO_KEY
+
+# Example configurations:
+# Single node setup
+# my-eth-node ansible_host=192.168.1.100 ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/id_rsa
+
+# Multiple nodes with custom variables
+# [validators]
+# validator-01 ansible_host=10.0.1.10 ansible_user=root base_dir=/data
+# validator-02 ansible_host=10.0.1.11 ansible_user=root base_dir=/data
+
+# [beacon_nodes]  
+# beacon-01 ansible_host=10.0.2.10 ansible_user=root base_dir=/store
+# beacon-02 ansible_host=10.0.2.11 ansible_user=root base_dir=/store
+
+# Group variables can be defined in group_vars/ directory
+# or inline like this:
+# [ethereum_nodes:vars]
+# ansible_python_interpreter=/usr/bin/python3
+# ansible_ssh_common_args='-o StrictHostKeyChecking=no'

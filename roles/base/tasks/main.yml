@@ -1,0 +1,16 @@
+---
+- include_tasks: install.yml
+  tags:
+    - base.install
+    
+- include_tasks: docker.yml
+  tags:
+    - base.docker
+
+- include_tasks: golang.yml
+  tags:
+    - base.golang
+
+- include_tasks: disk.yml
+  tags:
+    - base.disk

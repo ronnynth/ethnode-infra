@@ -1,0 +1,72 @@
+---
+- name: rm docker.gpg
+  ansible.builtin.shell:
+      cmd: rm -rf /etc/apt/keyrings/docker.gpg
+  tags:
+      - base.docker
+
+- name: rm docker.list
+  ansible.builtin.shell:
+      cmd: rm -rf /etc/apt/sources.list.d/docker.list
+  tags:
+      - base.docker
+
+- name: install a list of packages
+  ansible.builtin.apt:
+      update_cache: yes
+      state: latest
+      pkg:
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+  tags:
+      - base.docker
+
+- name: create keyrings dir
+  ansible.builtin.file:
+      state: directory
+      path: /etc/apt/keyrings
+      mode: "0755"
+  tags:
+      - base.docker
+
+- name: add gpg key
+  ansible.builtin.shell:
+      cmd: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+  tags:
+      - base.docker
+
+- name: Add specified repository into sources list using specified filename
+  ansible.builtin.shell:
+      cmd: echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+  tags:
+      - base.docker
+
+- name: install a list of packages
+  ansible.builtin.apt:
+      update_cache: yes
+      state: latest
+      pkg:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose-plugin
+  tags:
+      - base.docker
+
+- name: copy docker file
+  ansible.builtin.copy:
+    src: daemon.json
+    dest: /etc/docker/daemon.json
+    mode: "0644"
+  tags:
+      - base.docker
+
+- name: restart docker service
+  ansible.builtin.systemd:
+      name: docker.service
+      state: restarted
+      enabled: yes
+  tags:
+      - base.docker

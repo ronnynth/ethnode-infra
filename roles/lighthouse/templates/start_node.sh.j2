@@ -1,0 +1,17 @@
+#!/bin/bash
+
+{{ base_dir }}/lighthouse/lighthouse-{{ version }} bn \
+    --network {{ network }} \
+    --datadir {{ base_dir }}/lighthouse/data \
+    --http \
+    --http-address "0.0.0.0" \
+    --checkpoint-sync-url "{{ checkpoint }}" \
+    --execution-endpoint "{{ execution }}" \
+    --execution-jwt "{{ base_dir }}/lighthouse/.jwt.hex" \
+    --metrics \
+    --metrics-address "0.0.0.0" \
+    --metrics-port 6005 \
+{% if network == 'mainnet' %}
+    --builder "{{ builder }}" \
+{% endif %}
+    --suggested-fee-recipient "{{ recipient }}"

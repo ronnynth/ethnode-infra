@@ -1,0 +1,19 @@
+# Geth execution client configuration
+# Download URL for Geth (this may need updating for newer versions)
+geth: https://gethstore.blob.core.windows.net/builds/geth-alltools-linux-amd64-1.16.1-12b4131f.tar.gz
+
+# Geth version - ensure this matches the download URL
+version: v1.11.1
+geth_check_sum: md5:a86be8e035e9429005b53fa7db8671f6
+
+# Base directory for Geth data
+base_dir: /data
+
+# Network to connect to (mainnet, goerli, sepolia, holesky)
+network: mainnet
+
+# External IP for P2P networking (optional)
+# Set this if your node is behind NAT and you want to advertise a specific external IP
+# Format: extip: "1.2.3.4"
+# Leave empty to auto-detect
+extip:

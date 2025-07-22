@@ -1,0 +1,16 @@
+[Unit]
+Description=geth service
+After=network.target
+
+[Service]
+Type=simple
+SyslogIdentifier=geth
+ExecStart=bash {{ base_dir }}/geth/start_node.sh
+User=root
+Restart=on-failure
+StartLimitInterval=5
+RestartSec=3
+TimeoutStopSec=180
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,7 @@
+lighthouse_base_dir: /store
+lighthouse_version: v7.1.0
+geth_base_dir: /data
+geth_version: v1.11.1
+geth_check_sum: md5:a86be8e035e9429005b53fa7db8671f6
+mev_base_dir: /store
+mev_version: v1.9

@@ -1,0 +1,30 @@
+---
+- name: download go pkg
+  ansible.builtin.get_url:
+      url: "{{ go_pkg }}"
+      dest: /tmp/go.tgz
+      checksum: "{{ go_check_sum }}"
+  tags:
+      - base.golang
+
+- name: unarchive go pkg
+  ansible.builtin.unarchive:
+      src: /tmp/go.tgz
+      dest: /usr/local/
+      remote_src: yes
+  tags:
+      - base.golang
+
+- name: Add go bin dir to system-wide $PATH.
+  copy:
+      dest: /etc/profile.d/gobinpath.sh
+      content: "export PATH=$PATH:/usr/local/go/bin"
+  tags:
+      - base.golang
+
+- name: Add go path bin dir to system-wide $PATH.
+  copy:
+      dest: /etc/profile.d/gopath.sh
+      content: "export PATH=$PATH:/root/go/bin"
+  tags:
+      - base.golang

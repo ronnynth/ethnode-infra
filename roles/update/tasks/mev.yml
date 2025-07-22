@@ -1,0 +1,67 @@
+---
+- name: Ensure base_dir exists
+  ansible.builtin.file:
+      state: directory
+      path: "{{ mev_base_dir }}/mev"
+      mode: "0755"
+  tags:
+      - update.mev
+
+- name: Ensure tmp_dir exists
+  ansible.builtin.file:
+      state: directory
+      path: "{{ mev_base_dir }}/mev/tmp"
+      mode: "0755"
+  tags:
+      - update.mev
+
+- name: Extract version number without 'v'
+  ansible.builtin.set_fact:
+    mev_number_version: "{{ mev_version | regex_replace('^v', '') }}"
+  tags:
+      - update.mev
+
+- name: Show current version
+  debug:
+    msg: "Current mev boost version is: {{ mev_number_version }}"
+  tags:
+      - update.mev
+      
+- name: Download builder pkg
+  ansible.builtin.get_url:
+      url: "https://github.com/flashbots/mev-boost/releases/download/{{ mev_version }}/mev-boost_{{ mev_number_version }}_linux_amd64.tar.gz"
+      dest: /tmp/builder.tgz  
+  tags:
+      - update.mev
+
+- name: Unarchive mev builder file
+  ansible.builtin.unarchive:
+      src: /tmp/builder.tgz
+      dest: "{{ mev_base_dir }}/mev/tmp"
+      remote_src: yes
+  tags:
+      - update.mev
+
+- name: Rename the extracted directory
+  ansible.builtin.shell: mv "{{ mev_base_dir }}/mev/tmp/mev-boost" "{{ mev_base_dir }}/mev/mev-{{ mev_version }}" && rm -rf "{{ mev_base_dir }}/mev/tmp"
+  tags:
+      - update.mev
+
+- name: Render start_node.sh file
+  ansible.builtin.template:
+    src: mev-start_node.sh.j2
+    dest: "{{ mev_base_dir }}/mev/start_node.sh"
+    owner: root
+    group: root
+    mode: 0755
+  tags:
+      - update.mev
+
+- name: Restart mev-boost
+  ansible.builtin.systemd:
+    name: mev-boost.service
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+  tags:
+      - update.mev

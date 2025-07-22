@@ -1,0 +1,3 @@
+builder: https://github.com/flashbots/mev-boost/releases/download/v1.9/mev-boost_1.9_linux_amd64.tar.gz
+version: v1.9
+base_dir: /data

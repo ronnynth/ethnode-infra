@@ -1,0 +1,42 @@
+---
+- name: Check device status
+  ansible.builtin.stat:
+    path: "{{ dev }}"
+  register: devdir
+  tags:
+    - disk
+
+- name: Check target directory status
+  ansible.builtin.stat:
+    path: "{{ dir }}"
+  register: initdir
+  tags:
+    - disk
+
+- name: Initialize filesystem
+  community.general.filesystem:
+    fstype: ext4
+    dev: "{{ dev }}"
+  when: devdir.stat.exists and not initdir.stat.exists
+  tags:
+    - disk
+
+- name: Create target directory
+  ansible.builtin.file:
+    state: directory
+    path: "{{ dir }}"
+    mode: "0755"
+  when: devdir.stat.exists and not initdir.stat.exists
+  tags:
+    - disk
+
+- name: Mount directory to device
+  ansible.posix.mount:
+    path: "{{ dir }}"
+    src: "{{ dev }}"
+    fstype: ext4
+    opts: defaults,noatime
+    state: mounted
+  when: devdir.stat.exists and not initdir.stat.exists
+  tags:
+    - disk

@@ -1,0 +1,8 @@
+# Disk role configuration variables
+# These are default values that should be overridden in your playbook
+
+# Target device for mounting - MUST be updated for your environment  
+dev: /dev/xxx  # Placeholder - specify actual device (e.g., /dev/sdb, /dev/nvme1n1)
+
+# Target directory for mounting
+dir: /xxx      # Placeholder - specify actual mount point (e.g., /data, /store)

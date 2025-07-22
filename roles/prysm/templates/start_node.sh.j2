@@ -1,0 +1,16 @@
+#!/bin/bash
+
+USE_PRYSM_VERSION={{ version }} {{ base_dir }}/prysm/prysm.sh beacon-chain \
+    --{{ network }} \
+    --http-host "0.0.0.0" \
+    --http-port 5052 \
+    --execution-endpoint={{ execution }} \
+    --jwt-secret={{ base_dir }}/prysm/.jwt.hex \
+    --datadir={{ base_dir }}/prysm/data \
+    --monitoring-host=0.0.0.0 \
+    --monitoring-port=6005 \
+    --http-mev-relay={{ builder }} \
+    --suggested-fee-recipient {{ recipient }} \
+    --accept-terms-of-use \
+    --checkpoint-sync-url={{ checkpoint }} \
+    --genesis-beacon-api-url=https://beaconstate.info

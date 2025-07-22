@@ -1,0 +1,73 @@
+---
+- name: Ensure base_dir exists
+  ansible.builtin.file:
+      state: directory
+      path: "{{ base_dir }}/lighthouse"
+      mode: "0755"
+  tags:
+      - lighthouse.install
+
+- name: Ensure tmp_dir exists
+  ansible.builtin.file:
+      state: directory
+      path: "{{ base_dir }}/lighthouse/tmp"
+      mode: "0755"
+  tags:
+      - lighthouse.install
+
+- name: Download lighthouse pkg
+  ansible.builtin.get_url:
+      url: "https://github.com/sigp/lighthouse/releases/download/{{ version }}/lighthouse-{{ version }}-x86_64-unknown-linux-gnu.tar.gz"
+      dest: /tmp/lighthouse.tgz
+  tags:
+      - lighthouse.install
+
+- name: Unarchive
+  ansible.builtin.unarchive:
+      src: /tmp/lighthouse.tgz
+      dest: "{{ base_dir }}/lighthouse/tmp"
+      remote_src: yes
+  tags:
+      - lighthouse.install
+
+- name: Rename the extracted directory
+  ansible.builtin.shell: mv "{{ base_dir }}/lighthouse/tmp/lighthouse" "{{ base_dir }}/lighthouse/lighthouse-{{ version }}" && rm -rf "{{ base_dir }}/lighthouse/tmp"
+  tags:
+      - lighthouse.install
+
+- name: Render start_node.sh file
+  ansible.builtin.template:
+    src: start_node.sh.j2
+    dest: "{{ base_dir }}/lighthouse/start_node.sh"
+    owner: root
+    group: root
+    mode: 0755
+  tags:
+      - lighthouse.install
+
+- name: Copy jwt.hex
+  ansible.builtin.copy:
+    src: jwt.hex
+    dest: "{{ base_dir }}/lighthouse/.jwt.hex"
+    mode: "0644"
+  tags:
+      - lighthouse.install
+
+- name: Render lighthouse.service file
+  ansible.builtin.template:
+    src: lighthouse.service.j2
+    dest: /etc/systemd/system/lighthouse.service
+    mode: 0644
+    owner: root
+    group: root
+  tags:
+      - lighthouse.install
+
+- name: Restart lighthouse
+  ansible.builtin.systemd:
+    name: lighthouse.service
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+  tags:
+      - lighthouse.install

@@ -1,0 +1,61 @@
+---
+- name: install pkg
+  ansible.builtin.apt:
+    update_cache: yes
+    state: latest
+    pkg:
+      - bc
+      - jq
+      - curl
+      - ntp
+      - sysstat
+      - iotop
+      - net-tools
+      - iftop
+      - unzip
+      - htop
+      - git
+      - tmux
+      - aria2
+      - prometheus-node-exporter
+      - lz4
+      - build-essential
+      - lrzsz
+      - tree
+  tags:
+    - base.install
+
+- name: set hostname
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname }}"
+  tags:
+    - base.install
+
+- name: optimize kernel
+  ansible.posix.sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+    reload: yes
+  tags:
+    - base.install
+  loop:
+    - { name: "fs.file-max", value: "9223372036854775807" }
+    - { name: "net.core.rmem_max", value: "16777216" }
+    - { name: "net.core.wmem_max", value: "16777216" }
+    - { name: "net.ipv4.tcp_rmem", value: "4096 87380 16777216" }
+    - { name: "net.ipv4.tcp_wmem", value: "4096 65536 16777216" }
+    - { name: "vm.swappiness", value: "10" }
+
+- name: Add or update resource limits in limits.conf
+  ansible.builtin.blockinfile:
+    path: /etc/security/limits.conf
+    block: |
+      * soft nproc 262144
+      * hard nproc 262144
+      * soft nofile 262144
+      * hard nofile 262144
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+    create: no
+  tags:
+    - base.install
